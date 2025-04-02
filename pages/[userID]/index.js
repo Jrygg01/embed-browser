@@ -3,9 +3,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head'; // For setting page title
 
-import SearchBar from '../../components/SearchBar';
 import SearchResults from '../../components/SearchResults';
 import EmbeddedBrowser from '../../components/EmbeddedBrowser'; // added
+import SearchBar from '../../components/SearchBar'; // added
 
 function UserSearchPage() {
     const router = useRouter();
@@ -76,7 +76,7 @@ function UserSearchPage() {
         if (currentClickData.current) {
             const endTime = new Date();
             const startTime = new Date(currentClickData.current.startTime);
-            const durationSeconds = Math.round((endTime - startTime) / 1000);
+            const durationSeconds = Number(((endTime - startTime) / 1000).toFixed(2)); // Changed to float with 2 decimals
 
             const clickEntry = {
                 url: currentClickData.current.url,
@@ -99,6 +99,9 @@ function UserSearchPage() {
     // --- Search and Navigation ---
 
     const handleSearch = useCallback(async (query) => {
+        setIsBrowsing(false); // Close the embedded browser immediately
+        setIframeUrl(''); // Clear the iframe URL
+
         setLoading(true);
         setSearchResults(null);
         setCurrentQuery(query); // Store the query
@@ -132,14 +135,16 @@ function UserSearchPage() {
 
     const handleResultClick = useCallback((url) => {
         console.log("Result clicked:", url);
+        currentClickData.current = { url, startTime: new Date().toISOString() }; // Record click start time
         setIframeUrl(url);          // set URL for iframe
         setIsBrowsing(true);        // show embedded browser
     }, []);
 
     const closeEmbeddedBrowser = useCallback(() => {
+        finalizeClick(); // Finalize and send click data
         setIsBrowsing(false);
         setIframeUrl('');
-    }, []);
+    }, [finalizeClick]);
 
     const handleFilterChange = (event) => {
         setFilterEmbeddable(event.target.checked);
@@ -155,7 +160,7 @@ function UserSearchPage() {
              if (currentClickData.current) {
                  const endTime = new Date();
                  const startTime = new Date(currentClickData.current.startTime);
-                 const durationSeconds = Math.round((endTime - startTime) / 1000);
+                 const durationSeconds = Number(((endTime - startTime) / 1000).toFixed(2)); // Changed to float with 2 decimals
                  const clickEntry = {
                     url: currentClickData.current.url,
                     startTime: startTime.toISOString(),
@@ -265,12 +270,13 @@ function UserSearchPage() {
                       Research Search
                     </h1>
                     <div className="flex-grow min-w-0">
-                         <SearchBar
-                             onSearch={handleSearch}
-                             containerClass="w-full max-w-2xl mx-auto"
-                             inputClass="bg-white text-gray-900 rounded-l-md text-sm sm:text-base"
-                             buttonClass="bg-green-500 hover:bg-green-600 rounded-r-md text-sm sm:text-base"
-                         />
+                        <SearchBar
+                            onSearch={handleSearch}
+                            containerClass="w-full max-w-2xl mx-auto"
+                            inputClass="bg-white text-gray-900 rounded-l-md text-sm sm:text-base"
+                            buttonClass="bg-green-500 hover:bg-green-600 rounded-r-md text-sm sm:text-base"
+                            value={currentQuery} // Pass currentQuery as the value
+                        />
                     </div>
                  </div>
              </header>
@@ -306,7 +312,7 @@ function UserSearchPage() {
              </footer>
 
              {isBrowsing && iframeUrl && (
-                 <EmbeddedBrowser url={iframeUrl} onClose={closeEmbeddedBrowser} />
+                 <EmbeddedBrowser url={iframeUrl} onClose={closeEmbeddedBrowser} onSearch={handleSearch} value={currentQuery} />
              )}
         </div>
     );

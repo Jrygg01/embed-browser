@@ -4,7 +4,7 @@ module.exports = {
     content: [
       "./pages/**/*.{js,ts,jsx,tsx}",
       "./components/**/*.{js,ts,jsx,tsx}",
-      "./styles/**/*.{css}" // Ensure Tailwind processes globals.css
+      "./styles/**/*.css" // Ensure Tailwind processes globals.css
     ],
     theme: {
       extend: {

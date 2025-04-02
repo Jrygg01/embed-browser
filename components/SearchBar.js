@@ -1,8 +1,12 @@
 // components/SearchBar.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function SearchBar({ onSearch, containerClass = "", inputClass = "", buttonClass = "" }) {
-    const [query, setQuery] = useState('');
+function SearchBar({ onSearch, containerClass = "", inputClass = "", buttonClass = "", value }) {
+    const [query, setQuery] = useState(value || '');
+
+    useEffect(() => {
+        setQuery(value || ''); // Update local state when value prop changes
+    }, [value]);
 
     const handleSubmit = (e) => {
         e.preventDefault();

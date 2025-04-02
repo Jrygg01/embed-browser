@@ -50,16 +50,16 @@ async function handleTrackData(userID, req, res) {
         if (click.startTime && click.endTime) {
              const start = new Date(click.startTime);
              const end = new Date(click.endTime);
-             // Ensure dates are valid before calculating
+             // Ensure valid dates and calculate duration as a float with 2 decimals
              if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-                duration = Math.round((end - start) / 1000);
+                duration = parseFloat(((end - start) / 1000).toFixed(2));
              }
         }
         return {
             ...click,
             startTime: click.startTime ? new Date(click.startTime) : null, // Store as ISODate
             endTime: click.endTime ? new Date(click.endTime) : null, // Store as ISODate
-            duration: duration, // Store calculated duration in seconds
+            duration: duration, // Now stored as a float
         };
     });
 
