@@ -13,7 +13,6 @@ function UserSearchPage() {
 
     const [searchResults, setSearchResults] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [filterEmbeddable, setFilterEmbeddable] = useState(true); // Default to true
     const [currentQuery, setCurrentQuery] = useState(''); // Store the last search query
     const [isBrowsing, setIsBrowsing] = useState(false); // added
     const [iframeUrl, setIframeUrl] = useState('');       // added
@@ -115,7 +114,7 @@ function UserSearchPage() {
             const response = await fetch('/api/search', { // Relative URL to Next.js API route
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query, filterEmbeddable }),
+                body: JSON.stringify({ query, filterEmbeddable: true }), // Enforce filterEmbeddable = true
             });
 
             if (!response.ok) {
@@ -131,7 +130,7 @@ function UserSearchPage() {
         } finally {
             setLoading(false);
         }
-    }, [filterEmbeddable, sendTrackingData]);
+    }, [sendTrackingData]);
 
     const handleResultClick = useCallback((url) => {
         console.log("Result clicked:", url);
@@ -145,10 +144,6 @@ function UserSearchPage() {
         setIsBrowsing(false);
         setIframeUrl('');
     }, [finalizeClick]);
-
-    const handleFilterChange = (event) => {
-        setFilterEmbeddable(event.target.checked);
-    };
 
     // --- Effects ---
 
@@ -282,18 +277,6 @@ function UserSearchPage() {
              </header>
 
              <main className="container pt-20 flex-grow">
-                 <div className="flex items-center justify-center mb-4">
-                         <input
-                             type="checkbox"
-                             id="embeddableFilter"
-                             className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                             checked={filterEmbeddable}
-                             onChange={handleFilterChange}
-                         />
-                         <label htmlFor="embeddableFilter" className="ml-2 text-gray-700 text-sm">
-                             Attempt to show only embeddable websites
-                         </label>
-                 </div>
                  <div>
                      {loading && <div className="text-center mt-4 text-gray-700">Loading results...</div>}
                      {!loading && searchResults === null && !currentQuery && (

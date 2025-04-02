@@ -83,7 +83,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query, filterEmbeddable } = req.body;
+    const { query } = req.body;
 
     if (!query) {
       return res.status(400).json({ error: "Search query is required" });
@@ -97,13 +97,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Server configuration error: API credentials missing." });
     }
 
-    console.log(`API: Searching for: "${query}" with filterEmbeddable=${filterEmbeddable}`);
+    console.log(`API: Searching for: "${query}"`);
     let allItems = [];
     let potentialItems = [];
-    const maxResultsNeeded = filterEmbeddable ? 30 : 10; // Fetch more if filtering
+    const maxResultsNeeded = 50; // Fetch a larger number of initial results
     let start = 1;
     let fetchCount = 0;
-    const MAX_FETCHES = filterEmbeddable ? 5 : 1; // Limit API calls
+    const MAX_FETCHES = 5; // Increase max fetches
 
     while (potentialItems.length < maxResultsNeeded && fetchCount < MAX_FETCHES) {
        fetchCount++;
@@ -115,7 +115,6 @@ export default async function handler(req, res) {
 
       if (!response.ok) {
         console.error("Google API error response:", data);
-        // Stop fetching if quota exceeded or other persistent error
         if (response.status === 403 || response.status === 429) {
              throw new Error(`Google API Error (${response.status}): ${data.error?.message || 'Quota likely exceeded'}`);
         }
@@ -140,13 +139,11 @@ export default async function handler(req, res) {
     console.log(`API: Received ${potentialItems.length} potential results from Google.`);
 
     // Filter based on preliminary check if requested
-    const initiallyFilteredItems = filterEmbeddable
-        ? potentialItems.filter(item => item.link && isEmbeddable(item.link))
-        : potentialItems;
+    const initiallyFilteredItems = potentialItems.filter(item => item.link && isEmbeddable(item.link));
 
     // Perform more reliable displayable check using HEAD requests
     const displayableChecks = await Promise.allSettled(
-        initiallyFilteredItems.slice(0, 20).map(item => // Limit HEAD requests
+        initiallyFilteredItems.slice(0, 30).map(item => // Limit HEAD requests
              isDisplayable(item.link).then(ok => ({ item, ok }))
         )
     );
@@ -155,9 +152,12 @@ export default async function handler(req, res) {
       .filter(result => result.status === 'fulfilled' && result.value.ok)
       .map(result => result.value.item);
 
+    let nonDisplayableItems = potentialItems.filter(item => !finalItems.includes(item)).slice(0, Math.max(0, 10 - finalItems.length)); // Get remaining items
 
-    console.log(`API: Returning ${finalItems.length} displayable search results.`);
-    res.status(200).json({ items: finalItems.slice(0, 10) }); // Return top 10 displayable
+    const combinedResults = [...finalItems, ...nonDisplayableItems];
+
+    console.log(`API: Returning ${combinedResults.length} search results.`);
+    res.status(200).json({ items: combinedResults }); // Return all combined results
 
   } catch (error) {
     console.error("API Search Error:", error);
