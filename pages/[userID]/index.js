@@ -255,14 +255,14 @@ function UserSearchPage() {
     return (
         <div className="min-h-screen flex flex-col">
              <Head>
-                <title>Research Search - {userID}</title>
+                <title>Embedded Web Browser - {userID}</title>
                 <meta name="description" content="Custom search interface for research" />
              </Head>
 
              <header className="fixed top-0 left-0 right-0 bg-blue-600 text-white shadow-md py-3 px-4 z-50">
                  <div className="container flex items-center gap-4">
                     <h1 className="text-xl font-bold flex-shrink-0 hidden sm:block">
-                      Research Search
+                      Web Search
                     </h1>
                     <div className="flex-grow min-w-0">
                         <SearchBar

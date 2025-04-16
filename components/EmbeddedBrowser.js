@@ -6,10 +6,10 @@ function EmbeddedBrowser({ url, onClose, onSearch, value }) {
     return (
         <div className="fixed inset-0 bg-gray-200 z-50 flex flex-col">
             <div className="bg-blue-600 text-white py-3 px-4 flex items-center justify-between">
-                <button onClick={onClose} className="mr-4 text-xl font-bold">
+                <button onClick={onClose} className="mr-4 text-xl font-bold bg-red-500 hover:bg-red-600 px-3 py-1 rounded">
                     ← Back
                 </button>
-                <span className="font-bold">Research Search</span>
+                <span className="font-bold">Web Browser</span>
                 <div className="flex-grow max-w-2xl mx-auto">
                     <SearchBar
                         onSearch={onSearch}
